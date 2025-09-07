@@ -1,0 +1,2 @@
+# No external dependencies required for this demo
+# All functionality is simulated using Python standard library

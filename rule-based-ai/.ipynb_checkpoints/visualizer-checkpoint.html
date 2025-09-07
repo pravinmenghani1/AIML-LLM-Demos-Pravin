@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rule-Based AI Visualizer</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .facts { background: #e8f5e8; }
+        .rules { background: #e8e8f5; }
+        .execution { background: #f5f5e8; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .rule { margin: 5px 0; padding: 8px; background: #f9f9f9; border-left: 3px solid #007acc; }
+        .fired { border-left-color: #28a745; background: #d4edda; }
+        .fact { display: inline-block; margin: 3px; padding: 5px 10px; background: #007acc; color: white; border-radius: 3px; }
+        .new-fact { background: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Rule-Based AI System (1950s-1980s Style)</h1>
+        
+        <div class="section facts">
+            <h3>Facts (Working Memory)</h3>
+            <div id="facts-display"></div>
+            <input type="text" id="fact-input" placeholder="Add fact...">
+            <button onclick="addFact()">Add Fact</button>
+        </div>
+        
+        <div class="section rules">
+            <h3>Rules (Knowledge Base)</h3>
+            <div id="rules-display"></div>
+        </div>
+        
+        <div class="section">
+            <button onclick="runInference()">🔥 Run Inference Engine</button>
+            <button onclick="reset()">Reset</button>
+        </div>
+        
+        <div class="section execution">
+            <h3>Execution Trace</h3>
+            <div id="execution-log"></div>
+        </div>
+    </div>
+
+    <script>
+        let facts = new Set();
+        let executionLog = [];
+        
+        const rules = [
+            {name: "R1", conditions: ["fever", "cough"], action: "respiratory_infection"},
+            {name: "R2", conditions: ["respiratory_infection", "chest_pain"], action: "pneumonia"},
+            {name: "R3", conditions: ["fever", "headache"], action: "viral_infection"},
+            {name: "R4", conditions: ["nausea", "stomach_pain"], action: "gastritis"},
+            {name: "R5", conditions: ["pneumonia"], action: "prescribe_antibiotics"},
+            {name: "R6", conditions: ["viral_infection"], action: "prescribe_rest"}
+        ];
+        
+        function displayFacts() {
+            const display = document.getElementById('facts-display');
+            display.innerHTML = Array.from(facts).map(fact => 
+                `<span class="fact">${fact}</span>`
+            ).join('');
+        }
+        
+        function displayRules() {
+            const display = document.getElementById('rules-display');
+            display.innerHTML = rules.map(rule => 
+                `<div class="rule" id="rule-${rule.name}">
+                    <strong>${rule.name}:</strong> IF ${rule.conditions.join(' AND ')} THEN ${rule.action}
+                </div>`
+            ).join('');
+        }
+        
+        function addFact() {
+            const input = document.getElementById('fact-input');
+            if (input.value.trim()) {
+                facts.add(input.value.trim());
+                input.value = '';
+                displayFacts();
+            }
+        }
+        
+        function runInference() {
+            executionLog = [];
+            let iteration = 0;
+            
+            while (iteration < 10) {
+                let fired = false;
+                
+                for (let rule of rules) {
+                    if (rule.conditions.every(cond => facts.has(cond)) && !facts.has(rule.action)) {
+                        facts.add(rule.action);
+                        executionLog.push(`${rule.name} fired: ${rule.action}`);
+                        document.getElementById(`rule-${rule.name}`).classList.add('fired');
+                        fired = true;
+                    }
+                }
+                
+                if (!fired) break;
+                iteration++;
+            }
+            
+            displayFacts();
+            displayExecutionLog();
+        }
+        
+        function displayExecutionLog() {
+            const display = document.getElementById('execution-log');
+            display.innerHTML = executionLog.map(log => `<div>→ ${log}</div>`).join('');
+        }
+        
+        function reset() {
+            facts.clear();
+            executionLog = [];
+            document.querySelectorAll('.rule').forEach(r => r.classList.remove('fired'));
+            displayFacts();
+            displayExecutionLog();
+        }
+        
+        // Initialize
+        facts.add("fever");
+        facts.add("cough");
+        displayFacts();
+        displayRules();
+    </script>
+</body>
+</html>

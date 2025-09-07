@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 How Transformers Work - Simple Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .step {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #ff6b6b;
+        }
+        .step h3 {
+            color: #ffeb3b;
+            margin-top: 0;
+        }
+        .input-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        .word-box {
+            display: inline-block;
+            background: #4ecdc4;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .attention-line {
+            height: 3px;
+            background: #ffeb3b;
+            margin: 10px 0;
+            border-radius: 2px;
+            animation: glow 2s infinite;
+        }
+        @keyframes glow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .hidden {
+            display: none;
+        }
+        .result-box {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 How Transformers Work</h1>
+        <p class="subtitle">Let's learn how AI understands and creates text, step by step!</p>
+
+        <div class="step">
+            <h3>Step 1: Choose what you want to see</h3>
+            <p>Pick a demo to understand how transformers work:</p>
+            <button class="button" onclick="showTextDemo()">📝 Text Processing</button>
+            <button class="button" onclick="showTranslationDemo()">🌍 Language Translation</button>
+        </div>
+
+        <div id="textDemo" class="step hidden">
+            <h3>Text Processing Mode</h3>
+            <p>Type a sentence and see how transformers understand it:</p>
+            <input type="text" class="input-box" id="userInput" placeholder="Type something like: The cat is happy" value="The cat is happy">
+            <br>
+            <button class="button" onclick="startDemo()">🚀 Start Processing!</button>
+        </div>
+
+        <div id="translationDemo" class="step hidden">
+            <h3>Translation Mode: French to English</h3>
+            <p>See how transformers translate languages using Encoder-Decoder:</p>
+            <input type="text" class="input-box" id="frenchInput" placeholder="Type in French like: Je suis étudiant" value="Je suis étudiant">
+            <br>
+            <button class="button" onclick="startTranslation()">🔄 Translate!</button>
+        </div>
+
+        <div id="step2" class="step hidden">
+            <h3>Step 2: Breaking into Words (Tokenization)</h3>
+            <p>First, I split your sentence into individual words:</p>
+            <div id="tokens"></div>
+            <p><em>Think of this like cutting a sentence into puzzle pieces!</em></p>
+        </div>
+
+        <div id="encoderStep" class="step hidden">
+            <h3>🔍 ENCODER: Understanding the Input</h3>
+            <div id="encoderContent">
+                <div style="background: rgba(76, 175, 80, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>📍 Step 1: Adding Position Information</h4>
+                    <p>Each word gets a "position tag" so I know the order:</p>
+                    <div id="positions"></div>
+                </div>
+                
+                <div style="background: rgba(33, 150, 243, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>👀 Step 2: Self-Attention (Looking at word relationships)</h4>
+                    <div id="encoderAttention"></div>
+                    <p><em>Each word looks at ALL other words to understand context</em></p>
+                </div>
+                
+                <div style="background: rgba(156, 39, 176, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>🧠 Step 3: Feed-Forward Processing</h4>
+                    <div id="encoderFeedForward"></div>
+                    <p><em>Deep thinking about what each word means in context</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="decoderStep" class="step hidden">
+            <h3>🎯 DECODER: Generating the Output</h3>
+            <div id="decoderContent">
+                <div style="background: rgba(255, 152, 0, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>🚀 Step 1: Starting with &lt;START&gt; token</h4>
+                    <div id="decoderStart"></div>
+                </div>
+                
+                <div style="background: rgba(244, 67, 54, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>👁️ Step 2: Self-Attention (Looking at previous output words)</h4>
+                    <div id="decoderSelfAttention"></div>
+                    <p><em>Only looks at words already generated (no peeking ahead!)</em></p>
+                </div>
+                
+                <div style="background: rgba(0, 188, 212, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>🔗 Step 3: Encoder-Decoder Attention</h4>
+                    <div id="encoderDecoderAttention"></div>
+                    <p><em>Looks back at the input to understand what to translate</em></p>
+                </div>
+                
+                <div style="background: rgba(139, 195, 74, 0.2); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                    <h4>🎲 Step 4: Predicting Next Word</h4>
+                    <div id="decoderPrediction"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="step3" class="step hidden">
+            <h3>Step 3: Understanding Connections (Attention)</h3>
+            <p>Now I look at how each word relates to other words:</p>
+            <div id="attention"></div>
+            <p><em>It's like asking: "Which words should I pay attention to when thinking about each word?"</em></p>
+        </div>
+
+        <div id="step4" class="step hidden">
+            <h3>Step 4: Processing Through Layers</h3>
+            <p>I send the words through multiple "thinking layers" to understand them better:</p>
+            <div id="layers"></div>
+            <p><em>Each layer makes the understanding deeper and smarter!</em></p>
+        </div>
+
+        <div id="step5" class="step hidden">
+            <h3>Step 5: Predicting What Comes Next</h3>
+            <p>Based on everything I learned, here's what word might come next:</p>
+            <div id="prediction"></div>
+            <button class="button" onclick="addPrediction()">➕ Add This Word</button>
+            <button class="button" onclick="resetDemo()">🔄 Try Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentTokens = [];
+        let currentStep = 0;
+        let demoMode = 'text'; // 'text' or 'translation'
+
+        function showTextDemo() {
+            demoMode = 'text';
+            document.getElementById('textDemo').classList.remove('hidden');
+            document.getElementById('translationDemo').classList.add('hidden');
+        }
+
+        function showTranslationDemo() {
+            demoMode = 'translation';
+            document.getElementById('translationDemo').classList.remove('hidden');
+            document.getElementById('textDemo').classList.add('hidden');
+        }
+
+        function startTranslation() {
+            const input = document.getElementById('frenchInput').value.trim();
+            if (!input) {
+                alert('Please type something in French first!');
+                return;
+            }
+
+            hideAllSteps();
+            currentTokens = input.toLowerCase().split(' ').filter(word => word.length > 0);
+            
+            // Show encoder-decoder process
+            setTimeout(() => showEncoderProcess(), 500);
+            setTimeout(() => showDecoderProcess(), 3000);
+        }
+
+        function showEncoderProcess() {
+            // Show tokenization first
+            const container = document.getElementById('tokens');
+            container.innerHTML = '';
+            
+            currentTokens.forEach((token, i) => {
+                setTimeout(() => {
+                    const wordBox = document.createElement('div');
+                    wordBox.className = 'word-box';
+                    wordBox.textContent = token;
+                    wordBox.style.background = '#4caf50';
+                    container.appendChild(wordBox);
+                }, i * 200);
+            });
+            
+            document.getElementById('step2').classList.remove('hidden');
+            
+            // Show encoder steps
+            setTimeout(() => {
+                document.getElementById('encoderStep').classList.remove('hidden');
+                
+                // Position encoding
+                const posContainer = document.getElementById('positions');
+                posContainer.innerHTML = '';
+                currentTokens.forEach((token, i) => {
+                    const posBox = document.createElement('div');
+                    posBox.innerHTML = `<span class="word-box" style="background: #4caf50">${token}</span> <small style="background: #ffeb3b; color: black; padding: 2px 8px; border-radius: 10px;">pos: ${i+1}</small>`;
+                    posBox.style.margin = '5px 0';
+                    posContainer.appendChild(posBox);
+                });
+                
+                // Self-attention
+                setTimeout(() => {
+                    const attContainer = document.getElementById('encoderAttention');
+                    attContainer.innerHTML = '<p>🔍 Each word looks at all others:</p>';
+                    currentTokens.forEach(token => {
+                        const line = document.createElement('div');
+                        line.innerHTML = `<span class="word-box" style="background: #2196f3">${token}</span> ↔️ <span style="opacity: 0.7">[all words]</span>`;
+                        attContainer.appendChild(line);
+                    });
+                }, 1000);
+                
+                // Feed-forward
+                setTimeout(() => {
+                    const ffContainer = document.getElementById('encoderFeedForward');
+                    ffContainer.innerHTML = '<p>🧠 Processing understanding:</p>';
+                    currentTokens.forEach(token => {
+                        const processed = document.createElement('div');
+                        processed.innerHTML = `<span class="word-box" style="background: #9c27b0">${token}</span> → <span style="color: #4caf50">✓ Understood</span>`;
+                        ffContainer.appendChild(processed);
+                    });
+                }, 2000);
+            }, 1000);
+        }
+
+        function showDecoderProcess() {
+            document.getElementById('decoderStep').classList.remove('hidden');
+            
+            // Translation dictionary for demo
+            const translations = {
+                'je': 'I',
+                'suis': 'am',
+                'étudiant': 'student',
+                'chat': 'cat',
+                'mange': 'eat',
+                'pomme': 'apple'
+            };
+            
+            let outputWords = ['<START>'];
+            let currentIndex = 0;
+            
+            function generateNextWord() {
+                if (currentIndex >= currentTokens.length) {
+                    outputWords.push('<END>');
+                    showFinalTranslation();
+                    return;
+                }
+                
+                const frenchWord = currentTokens[currentIndex];
+                const englishWord = translations[frenchWord] || frenchWord;
+                
+                // Show decoder start
+                const startContainer = document.getElementById('decoderStart');
+                startContainer.innerHTML = `<span class="word-box" style="background: #ff9800">${outputWords.join(' ')}</span>`;
+                
+                // Self-attention on output so far
+                setTimeout(() => {
+                    const selfAttContainer = document.getElementById('decoderSelfAttention');
+                    selfAttContainer.innerHTML = '<p>👁️ Looking at output so far:</p>';
+                    outputWords.forEach(word => {
+                        const line = document.createElement('div');
+                        line.innerHTML = `<span class="word-box" style="background: #f44336">${word}</span>`;
+                        selfAttContainer.appendChild(line);
+                    });
+                }, 500);
+                
+                // Encoder-decoder attention
+                setTimeout(() => {
+                    const encDecContainer = document.getElementById('encoderDecoderAttention');
+                    encDecContainer.innerHTML = '<p>🔗 Looking at French input:</p>';
+                    const line = document.createElement('div');
+                    line.innerHTML = `Focusing on: <span class="word-box" style="background: #00bcd4">${frenchWord}</span> from input`;
+                    encDecContainer.appendChild(line);
+                }, 1000);
+                
+                // Prediction
+                setTimeout(() => {
+                    const predContainer = document.getElementById('decoderPrediction');
+                    predContainer.innerHTML = `
+                        <p>🎯 Predicting next English word:</p>
+                        <div style="font-size: 1.2em; margin: 10px 0;">
+                            <span class="word-box" style="background: #8bc34a">${englishWord}</span>
+                            <span style="margin-left: 10px; color: #4caf50;">✓ Selected!</span>
+                        </div>
+                    `;
+                    
+                    outputWords.push(englishWord);
+                    currentIndex++;
+                    
+                    // Continue with next word
+                    setTimeout(() => generateNextWord(), 1500);
+                }, 1500);
+            }
+            
+            generateNextWord();
+        }
+
+        function showFinalTranslation() {
+            const finalContainer = document.getElementById('decoderPrediction');
+            finalContainer.innerHTML += `
+                <div style="background: rgba(76, 175, 80, 0.3); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h4>🎉 Final Translation:</h4>
+                    <div style="font-size: 1.3em;">
+                        <strong>French:</strong> ${currentTokens.join(' ')}<br>
+                        <strong>English:</strong> I am student
+                    </div>
+                </div>
+            `;
+        }
+
+        function startDemo() {
+            const input = document.getElementById('userInput').value.trim();
+            if (!input) {
+                alert('Please type something first!');
+                return;
+            }
+
+            hideAllSteps();
+            currentTokens = input.toLowerCase().split(' ').filter(word => word.length > 0);
+            
+            setTimeout(() => showTokens(), 500);
+            setTimeout(() => showAttention(), 1500);
+            setTimeout(() => showLayers(), 3000);
+            setTimeout(() => showPrediction(), 5000);
+        }
+
+        function hideAllSteps() {
+            const steps = ['step2', 'step3', 'step4', 'step5', 'encoderStep', 'decoderStep'];
+            steps.forEach(step => {
+                const element = document.getElementById(step);
+                if (element) element.classList.add('hidden');
+            });
+        }
+
+        function showTokens() {
+            const container = document.getElementById('tokens');
+            container.innerHTML = '';
+            
+            currentTokens.forEach((token, i) => {
+                setTimeout(() => {
+                    const wordBox = document.createElement('div');
+                    wordBox.className = 'word-box';
+                    wordBox.textContent = token;
+                    container.appendChild(wordBox);
+                }, i * 200);
+            });
+            
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function showAttention() {
+            const container = document.getElementById('attention');
+            container.innerHTML = '<p>🔍 Looking at word connections:</p>';
+            
+            currentTokens.forEach((token, i) => {
+                const wordBox = document.createElement('div');
+                wordBox.className = 'word-box';
+                wordBox.textContent = token;
+                wordBox.style.background = '#ff6b6b';
+                container.appendChild(wordBox);
+                
+                if (i < currentTokens.length - 1) {
+                    const line = document.createElement('div');
+                    line.className = 'attention-line';
+                    line.style.width = `${Math.random() * 100 + 50}px`;
+                    container.appendChild(line);
+                }
+            });
+            
+            document.getElementById('step3').classList.remove('hidden');
+        }
+
+        function showLayers() {
+            const container = document.getElementById('layers');
+            container.innerHTML = '';
+            
+            for (let layer = 1; layer <= 3; layer++) {
+                setTimeout(() => {
+                    const layerDiv = document.createElement('div');
+                    layerDiv.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; margin: 10px 0; border-radius: 10px;">
+                            <strong>🧠 Thinking Layer ${layer}</strong>
+                            <div style="margin-top: 10px;">
+                                ${currentTokens.map(token => `<span class="word-box" style="background: hsl(${layer * 60}, 70%, 60%)">${token}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(layerDiv);
+                }, layer * 600);
+            }
+            
+            document.getElementById('step4').classList.remove('hidden');
+        }
+
+        function showPrediction() {
+            // Smart prediction based on the last word
+            const lastWord = currentTokens[currentTokens.length - 1];
+            let possibleWords = [];
+            
+            // Context-aware predictions
+            if (lastWord === 'cat' || lastWord === 'dog') {
+                possibleWords = ['runs', 'sleeps', 'plays', 'eats'];
+            } else if (lastWord === 'is') {
+                possibleWords = ['happy', 'sad', 'big', 'small', 'running'];
+            } else if (lastWord === 'the') {
+                possibleWords = ['cat', 'dog', 'house', 'car', 'book'];
+            } else if (lastWord === 'happy' || lastWord === 'sad') {
+                possibleWords = ['today', 'because', 'and', 'very'];
+            } else if (lastWord === 'runs' || lastWord === 'plays') {
+                possibleWords = ['fast', 'slowly', 'outside', 'happily'];
+            } else {
+                possibleWords = ['and', 'in', 'on', 'with', 'very'];
+            }
+            
+            const nextWord = possibleWords[Math.floor(Math.random() * possibleWords.length)];
+            
+            const container = document.getElementById('prediction');
+            container.innerHTML = `
+                <div class="result-box">
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">
+                        <strong>Current sentence:</strong> "${currentTokens.join(' ')}"
+                    </div>
+                    <div style="font-size: 1.4em; color: #4ecdc4;">
+                        <strong>Next word prediction:</strong> <span style="background: #4ecdc4; color: white; padding: 5px 10px; border-radius: 5px;">${nextWord}</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+                        Confidence: ${(Math.random() * 30 + 70).toFixed(1)}%
+                    </div>
+                </div>
+            `;
+            
+            container.dataset.prediction = nextWord;
+            document.getElementById('step5').classList.remove('hidden');
+        }
+
+        function addPrediction() {
+            const prediction = document.getElementById('prediction').dataset.prediction;
+            const input = document.getElementById('userInput');
+            input.value += ' ' + prediction;
+            startDemo();
+        }
+
+        function resetDemo() {
+            if (demoMode === 'text') {
+                document.getElementById('userInput').value = 'The cat is happy';
+            } else {
+                document.getElementById('frenchInput').value = 'Je suis étudiant';
+            }
+            hideAllSteps();
+        }
+
+        // Auto-start text demo on page load
+        window.addEventListener('load', () => {
+            showTextDemo();
+        });
+    </script>
+</body>
+</html>
