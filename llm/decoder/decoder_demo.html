@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Decoder Demo</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .decoder-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #ff6b6b;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        .output {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 50px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+        .visual-output {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .byte-box {
+            padding: 8px;
+            background: #4ecdc4;
+            border-radius: 4px;
+            font-size: 12px;
+            min-width: 30px;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .morse-dot { color: #ffeb3b; }
+        .morse-dash { color: #ff9800; }
+        .binary-0 { background: #f44336; }
+        .binary-1 { background: #4caf50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Interactive Decoder Demo</h1>
+        
+        <div class="decoder-section">
+            <h2>🔤 Base64 Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="base64Input" placeholder="Enter Base64 encoded text (e.g., SGVsbG8gV29ybGQ=)">
+                <button onclick="decodeBase64()">Decode</button>
+            </div>
+            <div class="output" id="base64Output">Decoded text will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>📡 Morse Code Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="morseInput" placeholder="Enter Morse code (e.g., .... . .-.. .-.. --- / .-- --- .-. .-.. -..)">
+                <button onclick="decodeMorse()">Decode</button>
+            </div>
+            <div class="output" id="morseOutput">Decoded message will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🔢 Binary Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="binaryInput" placeholder="Enter binary (e.g., 01001000 01100101 01101100 01101100 01101111)">
+                <button onclick="decodeBinary()">Decode</button>
+            </div>
+            <div class="output" id="binaryOutput">Decoded text will appear here...</div>
+            <div class="visual-output" id="binaryVisual"></div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🔐 Caesar Cipher Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="caesarInput" placeholder="Enter encrypted text (e.g., Khoor Zruog)">
+                <input type="number" id="caesarShift" placeholder="Shift" value="3" style="flex: 0 0 80px;">
+                <button onclick="decodeCaesar()">Decode</button>
+            </div>
+            <div class="output" id="caesarOutput">Decoded message will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🌐 URL Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="urlInput" placeholder="Enter URL encoded text (e.g., Hello%20World%21)">
+                <button onclick="decodeURL()">Decode</button>
+            </div>
+            <div class="output" id="urlOutput">Decoded URL will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        function decodeBase64() {
+            const input = document.getElementById('base64Input').value;
+            const output = document.getElementById('base64Output');
+            
+            try {
+                const decoded = atob(input);
+                output.innerHTML = `<strong>Decoded:</strong> ${decoded}`;
+                output.style.color = '#4caf50';
+            } catch (e) {
+                output.innerHTML = `<strong>Error:</strong> Invalid Base64 input`;
+                output.style.color = '#f44336';
+            }
+        }
+
+        function decodeMorse() {
+            const morseCode = {
+                '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
+                '..-.': 'F', '--.': 'G', '....': 'H', '..': 'I', '.---': 'J',
+                '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', '---': 'O',
+                '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+                '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', '-.--': 'Y',
+                '--..': 'Z', '-----': '0', '.----': '1', '..---': '2',
+                '...--': '3', '....-': '4', '.....': '5', '-....': '6',
+                '--...': '7', '---..': '8', '----.': '9'
+            };
+
+            const input = document.getElementById('morseInput').value;
+            const output = document.getElementById('morseOutput');
+            
+            const words = input.split(' / ');
+            const decoded = words.map(word => {
+                return word.split(' ').map(code => morseCode[code] || '?').join('');
+            }).join(' ');
+
+            const visual = input.replace(/\./g, '<span class="morse-dot">●</span>')
+                              .replace(/-/g, '<span class="morse-dash">▬</span>');
+            
+            output.innerHTML = `<strong>Visual:</strong> ${visual}<br><strong>Decoded:</strong> ${decoded}`;
+        }
+
+        function decodeBinary() {
+            const input = document.getElementById('binaryInput').value;
+            const output = document.getElementById('binaryOutput');
+            const visual = document.getElementById('binaryVisual');
+            
+            const binaryGroups = input.split(' ').filter(group => group.length > 0);
+            let decoded = '';
+            visual.innerHTML = '';
+            
+            binaryGroups.forEach(group => {
+                if (/^[01]+$/.test(group)) {
+                    const char = String.fromCharCode(parseInt(group, 2));
+                    decoded += char;
+                    
+                    // Visual representation
+                    [...group].forEach(bit => {
+                        const box = document.createElement('div');
+                        box.className = `byte-box binary-${bit}`;
+                        box.textContent = bit;
+                        visual.appendChild(box);
+                    });
+                    
+                    const spacer = document.createElement('div');
+                    spacer.style.width = '10px';
+                    visual.appendChild(spacer);
+                }
+            });
+            
+            output.innerHTML = `<strong>Decoded:</strong> ${decoded}`;
+        }
+
+        function decodeCaesar() {
+            const input = document.getElementById('caesarInput').value;
+            const shift = parseInt(document.getElementById('caesarShift').value) || 3;
+            const output = document.getElementById('caesarOutput');
+            
+            const decoded = input.replace(/[A-Za-z]/g, char => {
+                const start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode((char.charCodeAt(0) - start - shift + 26) % 26 + start);
+            });
+            
+            output.innerHTML = `<strong>Shift -${shift}:</strong> ${decoded}`;
+        }
+
+        function decodeURL() {
+            const input = document.getElementById('urlInput').value;
+            const output = document.getElementById('urlOutput');
+            
+            try {
+                const decoded = decodeURIComponent(input);
+                output.innerHTML = `<strong>Decoded:</strong> ${decoded}`;
+                output.style.color = '#4caf50';
+            } catch (e) {
+                output.innerHTML = `<strong>Error:</strong> Invalid URL encoding`;
+                output.style.color = '#f44336';
+            }
+        }
+
+        // Auto-populate with examples on load
+        window.onload = function() {
+            document.getElementById('base64Input').value = 'SGVsbG8gV29ybGQ=';
+            document.getElementById('morseInput').value = '.... . .-.. .-.. --- / .-- --- .-. .-.. -..';
+            document.getElementById('binaryInput').value = '01001000 01100101 01101100 01101100 01101111';
+            document.getElementById('caesarInput').value = 'Khoor Zruog';
+            document.getElementById('urlInput').value = 'Hello%20World%21%20%F0%9F%8C%8D';
+        };
+    </script>
+</body>
+</html>

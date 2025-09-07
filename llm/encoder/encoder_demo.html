@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Encoder Architecture Demo</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1f77b4 0%, #ff7f0e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #1f77b4;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .control-group input, .control-group select, .control-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .control-group input:focus, .control-group select:focus, .control-group textarea:focus {
+            outline: none;
+            border-color: #1f77b4;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1f77b4 0%, #ff7f0e 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .metric-card h3 {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .metric-card h2 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .visualization {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .token-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .token {
+            background: #1f77b4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        #attentionHeatmap, #embeddingPlot {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Encoder Architecture Demo</h1>
+            <p>Interactive visualization of transformer encoder components</p>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="inputText">Input Text:</label>
+                    <textarea id="inputText" rows="3">The quick brown fox jumps over the lazy dog</textarea>
+                </div>
+                
+                <div class="control-group">
+                    <label for="vocabSize">Vocabulary Size:</label>
+                    <input type="range" id="vocabSize" min="100" max="10000" value="1000" oninput="updateMetrics()">
+                    <span id="vocabValue">1000</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="dModel">Model Dimension:</label>
+                    <select id="dModel" onchange="updateMetrics()">
+                        <option value="128">128</option>
+                        <option value="256" selected>256</option>
+                        <option value="512">512</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="numHeads">Number of Heads:</label>
+                    <select id="numHeads" onchange="updateMetrics()">
+                        <option value="4">4</option>
+                        <option value="8" selected>8</option>
+                        <option value="16">16</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="metrics">
+                <div class="metric-card">
+                    <h3>Vocabulary Size</h3>
+                    <h2 id="metricVocab">1,000</h2>
+                </div>
+                <div class="metric-card">
+                    <h3>Model Dimension</h3>
+                    <h2 id="metricDModel">256</h2>
+                </div>
+                <div class="metric-card">
+                    <h3>Parameters</h3>
+                    <h2 id="metricParams">256K</h2>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="processText()">🚀 Process with Encoder</button>
+            
+            <div id="tokenDisplay" class="token-display"></div>
+            
+            <div class="visualization">
+                <h3>Attention Heatmap</h3>
+                <div id="attentionHeatmap"></div>
+            </div>
+            
+            <div class="visualization">
+                <h3>Embedding Visualization</h3>
+                <div id="embeddingPlot"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateMetrics() {
+            const vocabSize = document.getElementById('vocabSize').value;
+            const dModel = document.getElementById('dModel').value;
+            
+            document.getElementById('vocabValue').textContent = vocabSize;
+            document.getElementById('metricVocab').textContent = parseInt(vocabSize).toLocaleString();
+            document.getElementById('metricDModel').textContent = dModel;
+            
+            // Rough parameter calculation
+            const params = (parseInt(vocabSize) * parseInt(dModel)) + (parseInt(dModel) * parseInt(dModel) * 4);
+            document.getElementById('metricParams').textContent = (params / 1000).toFixed(0) + 'K';
+        }
+        
+        function processText() {
+            const text = document.getElementById('inputText').value;
+            const tokens = text.split(' ').slice(0, 10);
+            
+            // Display tokens
+            const tokenDisplay = document.getElementById('tokenDisplay');
+            tokenDisplay.innerHTML = tokens.map(token => 
+                `<span class="token">${token}</span>`
+            ).join('');
+            
+            // Generate attention heatmap
+            const attentionData = generateAttentionMatrix(tokens.length);
+            plotAttentionHeatmap(attentionData, tokens);
+            
+            // Generate embedding visualization
+            const embeddingData = generateEmbeddingData(tokens.length);
+            plotEmbeddings(embeddingData);
+        }
+        
+        function generateAttentionMatrix(size) {
+            const matrix = [];
+            for (let i = 0; i < size; i++) {
+                const row = [];
+                for (let j = 0; j < size; j++) {
+                    row.push(Math.random() * 0.8 + 0.1);
+                }
+                // Normalize row
+                const sum = row.reduce((a, b) => a + b, 0);
+                matrix.push(row.map(val => val / sum));
+            }
+            return matrix;
+        }
+        
+        function generateEmbeddingData(numTokens) {
+            const data = [];
+            for (let i = 0; i < numTokens; i++) {
+                const embedding = [];
+                for (let j = 0; j < 50; j++) {
+                    embedding.push(Math.random() * 2 - 1);
+                }
+                data.push(embedding);
+            }
+            return data;
+        }
+        
+        function plotAttentionHeatmap(data, tokens) {
+            const trace = {
+                z: data,
+                type: 'heatmap',
+                colorscale: 'Viridis',
+                showscale: true
+            };
+            
+            const layout = {
+                title: 'Attention Weights Between Tokens',
+                xaxis: { title: 'Key Tokens', ticktext: tokens, tickvals: tokens.map((_, i) => i) },
+                yaxis: { title: 'Query Tokens', ticktext: tokens, tickvals: tokens.map((_, i) => i) },
+                margin: { t: 50, l: 100, r: 50, b: 100 }
+            };
+            
+            Plotly.newPlot('attentionHeatmap', [trace], layout);
+        }
+        
+        function plotEmbeddings(data) {
+            const trace = {
+                z: data,
+                type: 'heatmap',
+                colorscale: 'RdBu',
+                showscale: true
+            };
+            
+            const layout = {
+                title: 'Token Embeddings (First 50 dimensions)',
+                xaxis: { title: 'Embedding Dimensions' },
+                yaxis: { title: 'Tokens' },
+                margin: { t: 50, l: 50, r: 50, b: 50 }
+            };
+            
+            Plotly.newPlot('embeddingPlot', [trace], layout);
+        }
+        
+        // Initialize
+        updateMetrics();
+        processText();
+    </script>
+</body>
+</html>

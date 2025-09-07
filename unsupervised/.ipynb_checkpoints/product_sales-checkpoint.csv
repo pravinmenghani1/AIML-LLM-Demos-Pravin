@@ -1,0 +1,26 @@
+product_id,product_name,price,units_sold,revenue,category,rating,reviews_count
+1,Wireless Headphones,89.99,245,22047.55,Electronics,4.2,156
+2,Coffee Maker,129.99,189,24568.11,Appliances,4.5,203
+3,Running Shoes,79.99,312,24956.88,Sports,4.1,287
+4,Smartphone Case,19.99,567,11334.33,Electronics,3.8,445
+5,Yoga Mat,34.99,198,6928.02,Sports,4.6,134
+6,Bluetooth Speaker,59.99,278,16677.22,Electronics,4.3,189
+7,Kitchen Knife Set,149.99,123,18448.77,Appliances,4.7,98
+8,Fitness Tracker,199.99,156,31198.44,Electronics,4.0,234
+9,Protein Powder,49.99,289,14447.11,Health,4.4,167
+10,Laptop Stand,39.99,234,9357.66,Electronics,4.2,178
+11,Air Fryer,179.99,145,26098.55,Appliances,4.6,123
+12,Water Bottle,24.99,456,11387.44,Sports,4.1,298
+13,Desk Lamp,69.99,167,11688.33,Home,4.3,145
+14,Gaming Mouse,79.99,298,23837.02,Electronics,4.5,267
+15,Blender,99.99,178,17798.22,Appliances,4.4,156
+16,Tennis Racket,119.99,89,10679.11,Sports,4.2,78
+17,Phone Charger,29.99,389,11666.11,Electronics,3.9,334
+18,Cookware Set,249.99,67,16749.33,Appliances,4.8,89
+19,Resistance Bands,19.99,345,6896.55,Sports,4.0,234
+20,Tablet,299.99,134,40198.66,Electronics,4.3,198
+21,Vacuum Cleaner,199.99,98,19599.02,Appliances,4.5,134
+22,Basketball,39.99,234,9357.66,Sports,4.2,189
+23,Monitor,249.99,156,38998.44,Electronics,4.4,167
+24,Toaster,79.99,189,15118.11,Appliances,4.1,145
+25,Dumbbells,89.99,123,11068.77,Sports,4.6,98

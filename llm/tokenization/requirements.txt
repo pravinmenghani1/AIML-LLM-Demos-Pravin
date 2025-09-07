@@ -1,0 +1,7 @@
+transformers>=4.21.0
+tiktoken>=0.4.0
+sentencepiece>=0.1.97
+matplotlib>=3.5.0
+numpy>=1.21.0
+jupyter>=1.0.0
+ipykernel>=6.0.0

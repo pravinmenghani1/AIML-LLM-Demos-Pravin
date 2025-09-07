@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Decoder Demo</title>
+    <style>
+        body {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .decoder-section {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            backdrop-filter: blur(10px);
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-family: inherit;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .output {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 60px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .token {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+            animation: tokenAppear 0.5s ease-out;
+        }
+        @keyframes tokenAppear {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .token-id { background: #ff6b6b; }
+        .token-text { background: #4ecdc4; color: #000; }
+        .token-special { background: #ffd93d; color: #000; }
+        .logit-bar {
+            height: 20px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            margin: 2px 0;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .logit-text {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .attention-matrix {
+            display: grid;
+            gap: 2px;
+            margin: 10px 0;
+        }
+        .attention-cell {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .embedding-viz {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .embedding-dim {
+            width: 8px;
+            height: 40px;
+            border-radius: 2px;
+            margin: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 LLM Decoder Demo</h1>
+        
+        <div class="decoder-section">
+            <h2>🔤 Tokenization Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="tokenInput" placeholder="Enter text to tokenize (e.g., Hello, world!)">
+                <button onclick="decodeTokens()">Tokenize</button>
+            </div>
+            <div class="output" id="tokenOutput">Tokens will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>📊 Logits to Text Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="logitsInput" placeholder="Enter comma-separated logits (e.g., 2.1,1.8,0.5,3.2,1.1)">
+                <button onclick="decodeLogits()">Decode</button>
+            </div>
+            <div class="output" id="logitsOutput">Probability distribution will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🎯 Attention Pattern Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="attentionInput" placeholder="Enter tokens (e.g., The cat sat)">
+                <button onclick="decodeAttention()">Generate Attention</button>
+            </div>
+            <div class="output" id="attentionOutput">Attention matrix will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🧠 Embedding Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="embeddingInput" placeholder="Enter a word (e.g., neural)">
+                <button onclick="decodeEmbedding()">Visualize Embedding</button>
+            </div>
+            <div class="output" id="embeddingOutput">Embedding visualization will appear here...</div>
+        </div>
+
+        <div class="decoder-section">
+            <h2>🔄 Generation Process Decoder</h2>
+            <div class="input-area">
+                <input type="text" id="promptInput" placeholder="Enter prompt (e.g., The future of AI is)">
+                <button onclick="decodeGeneration()">Simulate Generation</button>
+            </div>
+            <div class="output" id="generationOutput">Generation process will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Simplified tokenizer simulation
+        function simpleTokenize(text) {
+            const tokens = [];
+            const words = text.split(/(\s+|[.,!?;:])/);
+            let tokenId = 1000;
+            
+            words.forEach(word => {
+                if (word.trim()) {
+                    if (word.match(/[.,!?;:]/)) {
+                        tokens.push({ id: tokenId++, text: word, type: 'special' });
+                    } else if (word.match(/\s+/)) {
+                        tokens.push({ id: tokenId++, text: '▁', type: 'special' });
+                    } else {
+                        tokens.push({ id: tokenId++, text: word, type: 'text' });
+                    }
+                }
+            });
+            return tokens;
+        }
+
+        function decodeTokens() {
+            const input = document.getElementById('tokenInput').value;
+            const output = document.getElementById('tokenOutput');
+            
+            const tokens = simpleTokenize(input);
+            let html = '<div><strong>Tokenization Process:</strong></div><br>';
+            
+            tokens.forEach((token, i) => {
+                setTimeout(() => {
+                    html += `<span class="token token-${token.type}" title="Token ID: ${token.id}">${token.text}</span>`;
+                    output.innerHTML = html + `<br><br><strong>Total tokens:</strong> ${tokens.length}`;
+                }, i * 200);
+            });
+        }
+
+        function softmax(arr) {
+            const max = Math.max(...arr);
+            const exp = arr.map(x => Math.exp(x - max));
+            const sum = exp.reduce((a, b) => a + b, 0);
+            return exp.map(x => x / sum);
+        }
+
+        function decodeLogits() {
+            const input = document.getElementById('logitsInput').value;
+            const output = document.getElementById('logitsOutput');
+            
+            try {
+                const logits = input.split(',').map(x => parseFloat(x.trim()));
+                const probs = softmax(logits);
+                const vocab = ['the', 'cat', 'dog', 'is', 'running'];
+                
+                let html = '<div><strong>Logits → Probabilities:</strong></div><br>';
+                
+                logits.forEach((logit, i) => {
+                    const prob = probs[i];
+                    const width = prob * 100;
+                    const word = vocab[i] || `token_${i}`;
+                    
+                    html += `
+                        <div style="margin: 5px 0;">
+                            <div>${word}: logit=${logit.toFixed(2)}, prob=${(prob*100).toFixed(1)}%</div>
+                            <div class="logit-bar" style="width: ${width}%">
+                                <div class="logit-text">${word}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                output.innerHTML = html;
+            } catch (e) {
+                output.innerHTML = '<div style="color: #ff6b6b;">Error: Invalid logits format</div>';
+            }
+        }
+
+        function decodeAttention() {
+            const input = document.getElementById('attentionInput').value;
+            const output = document.getElementById('attentionOutput');
+            
+            const tokens = input.split(' ').filter(t => t.trim());
+            const size = tokens.length;
+            
+            let html = '<div><strong>Attention Matrix:</strong></div><br>';
+            html += `<div class="attention-matrix" style="grid-template-columns: repeat(${size + 1}, 1fr);">`;
+            
+            // Header row
+            html += '<div></div>';
+            tokens.forEach(token => {
+                html += `<div style="font-weight: bold; text-align: center;">${token}</div>`;
+            });
+            
+            // Attention weights
+            tokens.forEach((token, i) => {
+                html += `<div style="font-weight: bold;">${token}</div>`;
+                tokens.forEach((_, j) => {
+                    const attention = Math.random();
+                    const intensity = Math.floor(attention * 255);
+                    const color = `rgb(${intensity}, ${Math.floor(intensity * 0.8)}, ${Math.floor(intensity * 0.6)})`;
+                    html += `<div class="attention-cell" style="background: ${color};" title="Attention: ${attention.toFixed(3)}">${attention.toFixed(2)}</div>`;
+                });
+            });
+            
+            html += '</div>';
+            output.innerHTML = html;
+        }
+
+        function decodeEmbedding() {
+            const input = document.getElementById('embeddingInput').value;
+            const output = document.getElementById('embeddingOutput');
+            
+            const dimensions = 64;
+            let html = `<div><strong>Embedding for "${input}" (${dimensions}D):</strong></div><br>`;
+            html += '<div class="embedding-viz">';
+            
+            for (let i = 0; i < dimensions; i++) {
+                const value = (Math.sin(i * 0.1 + input.length) + 1) / 2;
+                const height = Math.floor(value * 40) + 5;
+                const color = `hsl(${value * 360}, 70%, 60%)`;
+                html += `<div class="embedding-dim" style="height: ${height}px; background: ${color};" title="Dim ${i}: ${value.toFixed(3)}"></div>`;
+            }
+            
+            html += '</div>';
+            html += `<div style="margin-top: 15px; font-size: 12px; color: #888;">Each bar represents one dimension of the embedding vector</div>`;
+            
+            output.innerHTML = html;
+        }
+
+        function decodeGeneration() {
+            const input = document.getElementById('promptInput').value;
+            const output = document.getElementById('generationOutput');
+            
+            const continuations = ['exciting', 'bright', 'transformative', 'revolutionary', 'promising'];
+            let html = `<div><strong>Generation Process for:</strong> "${input}"</div><br>`;
+            
+            html += '<div><strong>Step-by-step generation:</strong></div>';
+            
+            let currentText = input;
+            continuations.forEach((word, i) => {
+                setTimeout(() => {
+                    currentText += ` ${word}`;
+                    const stepHtml = `
+                        <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                            <div><strong>Step ${i + 1}:</strong></div>
+                            <div>Context: "${input}"</div>
+                            <div>Next token probabilities: ${word} (0.${Math.floor(Math.random() * 9) + 1})</div>
+                            <div>Generated: <span style="color: #4ecdc4;">${word}</span></div>
+                            <div>Current output: "${currentText}"</div>
+                        </div>
+                    `;
+                    
+                    if (i === 0) {
+                        output.innerHTML = html + stepHtml;
+                    } else {
+                        output.innerHTML += stepHtml;
+                    }
+                }, i * 1500);
+            });
+        }
+
+        // Auto-populate examples
+        window.onload = function() {
+            document.getElementById('tokenInput').value = 'Hello, world! How are you?';
+            document.getElementById('logitsInput').value = '2.1, 1.8, 0.5, 3.2, 1.1';
+            document.getElementById('attentionInput').value = 'The cat sat';
+            document.getElementById('embeddingInput').value = 'neural';
+            document.getElementById('promptInput').value = 'The future of AI is';
+        };
+    </script>
+</body>
+</html>
